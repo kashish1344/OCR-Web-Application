@@ -82,14 +82,3 @@ The main application file contains the following key functions:
 
 - **`templates/index.html`**: The main HTML page for the web interface.
 
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📜 License
-
-This project is licensed under the MIT License. See the LICENSE file for more information.
-
----
-
-Happy coding! If you have any questions or need further assistance, feel free to open an issue.
