@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCR Business Application</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Custom CSS -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: url("https://static-content.cihms.com/wp-content/uploads/2021/06/cihms-ocr-technology.jpg") no-repeat center center fixed;
+            background-size: cover;
+        }
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            margin-top: 50px;
+        }
+        h1 {
+            margin-bottom: 20px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        h1 img {
+            margin-left: 10px;
+            width: 40px; /* Adjust size as needed */
+            height: 40px; /* Adjust size as needed */
+        }
+        .upload-area {
+            border: 2px dashed #007bff;
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .upload-area:hover {
+            background-color: #f1f1f1;
+        }
+        .file-name {
+            margin-top: 10px;
+            font-style: italic;
+            color: #007bff;
+        }
+        .result {
+            margin-top: 20px;
+            text-align: left;
+            white-space: pre-wrap;
+            background-color: #f8f9fa;
+            padding: 40px 20px 20px 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        .btn-container {
+            display: flex;
+            justify-content: flex-start;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+        .copy-btn, .download-btn {
+            cursor: pointer;
+            color: #007bff;
+            margin-right: 10px;
+        }
+        .copy-btn:hover, .download-btn:hover {
+            color: #0056b3;
+        }
+        .loader {
+            border: 16px solid #f3f3f3;
+            border-top: 16px solid #3498db;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            animation: spin 2s linear infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center">
+            Extract Text from Images Seamlessly
+            <img src="https://static.thenounproject.com/png/5598599-200.png" alt="Upload Icon">
+        </h1>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <div class="form-group">
+                <div class="upload-area" id="uploadArea">
+                    <p>Drag & Drop your file here or click to upload</p>
+                    <input type="file" class="form-control-file" name="image" id="fileInput" accept="image/*" style="display: none;" required>
+                </div>
+                <div class="file-name" id="fileName"></div>
+            </div>
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary">Upload</button>
+            </div>
+        </form>
+        <div class="result" id="result">
+            <div class="btn-container">
+                <i class="fas fa-copy copy-btn" id="copyButton" title="Copy to Clipboard"></i>
+                <i class="fas fa-download download-btn" id="downloadButton" title="Download as Text File"></i>
+            </div>
+            <div id="resultText"></div>
+        </div>
+        <div class="loader" id="loader"></div>
+    </div>
+    <div class="footer">
+        &copy; 2024 OCR Business Application. All rights reserved.
+    </div>
+
+    <!-- Bootstrap JS, Popper.js, and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- Custom JS -->
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileNameDisplay = document.getElementById('fileName');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                fileNameDisplay.innerText = `Selected file: ${files[0].name}`;
+            }
+        });
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                fileNameDisplay.innerText = `Selected file: ${fileInput.files[0].name}`;
+            }
+        });
+
+        document.getElementById('uploadForm').onsubmit = async function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const loader = document.getElementById('loader');
+            const resultDiv = document.getElementById('resultText');
+            loader.style.display = 'block';
+            resultDiv.innerText = '';
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            loader.style.display = 'none';
+            if (response.ok) {
+                resultDiv.innerText = result.extracted_text;
+            } else {
+                resultDiv.innerText = result.error || 'An error occurred.';
+            }
+        };
+
+        document.getElementById('copyButton').onclick = function () {
+            const resultText = document.getElementById('resultText').innerText;
+            navigator.clipboard.writeText(resultText).then(() => {
+                alert('Text copied to clipboard!');
+            }, (err) => {
+                console.error('Failed to copy text: ', err);
+            });
+        };
+
+        document.getElementById('downloadButton').onclick = function () {
+            const resultText = document.getElementById('resultText').innerText;
+            const blob = new Blob([resultText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'extracted_text.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        };
+    </script>
+</body>
+</html>
