@@ -3,6 +3,10 @@
 
 This repository contains a web application for **Optical Character Recognition (OCR)** using Flask, OpenCV, and EasyOCR. The application allows users to upload images, processes these images to correct orientation and skew, and extracts text using OCR technology. The extracted text is then presented to the user.
 
+# 📻 Demo Video
+
+https://github.com/kashish1344/OCR-Web-Application/assets/83247791/6f96b0d9-d8c7-4c21-bfcb-11964fe182a1
+
 ## ✨ Features
 
 - **📤 Image Upload:** Users can upload images through the web interface.
